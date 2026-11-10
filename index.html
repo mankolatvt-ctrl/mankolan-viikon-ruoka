@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<title>Mankolan koulun ruokalista</title>
+<style>
+html, body { margin: 0; padding: 0; background: #ffffff; }
+body { width: 1345px; height: 980px; overflow: hidden; position: relative;
+       font-family: Verdana, Geneva, Arial, sans-serif; color: #1f2a44; }
+#ylä { height: 112px; background: #1f2a44; color: #ffffff; padding: 0 48px; }
+#ylä h1 { margin: 0; padding-top: 22px; font: bold 40px "Trebuchet MS", Verdana, sans-serif; }
+#ylä p { margin: 6px 0 0 0; font-size: 22px; color: #c4cde6; }
+#lista { width: 1345px; border-collapse: collapse; table-layout: fixed; font-size: 26px; }
+#lista td { height: 150px; padding: 0 48px; vertical-align: middle; border-bottom: 1px solid #b9c0d0; }
+#lista td.pv { width: 230px; padding-right: 10px; }
+.pnimi { font-weight: bold; font-size: 26px; }
+.pnum { font-size: 19px; margin-top: 4px; color: #4a5470; }
+.ryhma { margin: 0 0 6px 0; line-height: 1.3; }
+.tyhja { color: #8a90a0; font-style: italic; }
+tr.nyt td { background: #ffe45c; }
+tr.nyt .pnum { color: #1f2a44; }
+tr.meni td { color: #8a90a0; }
+tr.meni .pnum { color: #9aa0b0; }
+#vika { padding: 14px 48px; font-size: 20px; color: #9b1c1c; }
+#alalaita { position: absolute; left: 48px; bottom: 12px; font-size: 15px; color: #6b7285; }
+</style>
+</head>
+<body>
+<div id="ylä"><h1>Mankolan koulun ruokalista</h1><p id="viikko">&nbsp;</p></div>
+<table id="lista"><tbody id="rivit"></tbody></table>
+<div id="vika"></div>
+<div id="alalaita">Jyväskylän kaupunki, Kylän Kattaus (eRuokalista)</div>
+<script>
+var PAIVAT = ['Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai'];
+var haettu = false;
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function pvm(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.appendChild(document.createTextNode(text));
+  return e;
+}
+function pyyda(url, ok, virhe) {
+  var x = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+  x.open('GET', url, true);
+  x.onreadystatechange = function () {
+    if (x.readyState !== 4) return;
+    if (x.status === 200 || (x.status === 0 && x.responseText)) {
+      var d;
+      try { d = JSON.parse(x.responseText); } catch (e) { virhe(); return; }
+      ok(d);
+    } else { virhe(); }
+  };
+  x.send(null);
+}
+function ryhmittele(ruoat) {
+  var ryhmat = [], idx = {}, i, k;
+  for (i = 0; i < ruoat.length; i++) {
+    k = ruoat[i].ryhma || '';
+    if (!idx.hasOwnProperty(k)) { idx[k] = ryhmat.length; ryhmat.push({ nimi: k, lista: [] }); }
+    ryhmat[idx[k]].lista.push(ruoat[i].nimi);
+  }
+  return ryhmat;
+}
+function piirra(data) {
+  var rivit = document.getElementById('rivit'), tanaan = iso(new Date());
+  var ma = pvm(data.maanantai), pe = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + 4);
+  var haku = {}, i, j;
+  for (i = 0; i < data.paivat.length; i++) haku[data.paivat[i].pvm] = data.paivat[i].ruoat;
+  while (rivit.firstChild) rivit.removeChild(rivit.firstChild);
+  for (i = 0; i < 5; i++) {
+    var d = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + i), k = iso(d);
+    var tr = el('tr', k === tanaan ? 'nyt' : (k < tanaan ? 'meni' : ''));
+    var a = el('td', 'pv'), b = el('td', 'ruoka');
+    a.appendChild(el('div', 'pnimi', PAIVAT[i]));
+    a.appendChild(el('div', 'pnum', d.getDate() + '.' + (d.getMonth() + 1) + '.' + (k === tanaan ? ' tänään' : '')));
+    var ryhmat = ryhmittele(haku[k] || []);
+    if (!ryhmat.length) b.appendChild(el('div', 'tyhja', 'Ei ruokalistaa'));
+    for (j = 0; j < ryhmat.length; j++) {
+      var p = el('p', 'ryhma');
+      if (ryhmat.length > 1 && ryhmat[j].nimi) p.appendChild(el('b', '', ryhmat[j].nimi + ': '));
+      p.appendChild(document.createTextNode(ryhmat[j].lista.join(', ')));
+      b.appendChild(p);
+    }
+    tr.appendChild(a); tr.appendChild(b); rivit.appendChild(tr);
+  }
+  document.getElementById('viikko').innerHTML = 'Viikko ' + data.viikko + ', ' + ma.getDate() + '.' + (ma.getMonth() + 1) +
+    '.\u2013' + pe.getDate() + '.' + (pe.getMonth() + 1) + '.';
+  document.getElementById('alalaita').innerHTML = 'Jyväskylän kaupunki, Kylän Kattaus (eRuokalista). Päivitetty ' + data.paivitetty;
+  document.getElementById('vika').innerHTML = '';
+  sovita();
+}
+function sovita() {
+  var t = document.getElementById('lista'), koko = 26;
+  t.style.fontSize = koko + 'px';
+  while (t.offsetHeight > 980 - 112 - 40 && koko > 14) { koko--; t.style.fontSize = koko + 'px'; }
+}
+function lataa() {
+  pyyda('menu.json?t=' + new Date().getTime(), function (d) { haettu = true; piirra(d); }, function () {
+    if (!haettu) document.getElementById('vika').innerHTML = 'Ruokalistaa ei saatu ladattua. Yritetään uudelleen.';
+    setTimeout(lataa, 60000);
+  });
+}
+lataa();
+setInterval(lataa, 15 * 60 * 1000);
+</script>
+</body>
+</html>
