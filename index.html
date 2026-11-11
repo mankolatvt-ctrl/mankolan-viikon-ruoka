@@ -1,111 +1,126 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1345">
+<meta http-equiv="refresh" content="900">
 <title>Mankolan koulun ruokalista</title>
-<style>
-html, body { margin: 0; padding: 0; background: #ffffff; }
-body { width: 1345px; height: 980px; overflow: hidden; position: relative;
-       font-family: Verdana, Geneva, Arial, sans-serif; color: #1f2a44; }
-#ylä { height: 112px; background: #1f2a44; color: #ffffff; padding: 0 48px; }
-#ylä h1 { margin: 0; padding-top: 22px; font: bold 40px "Trebuchet MS", Verdana, sans-serif; }
-#ylä p { margin: 6px 0 0 0; font-size: 22px; color: #c4cde6; }
-#lista { width: 1345px; border-collapse: collapse; table-layout: fixed; font-size: 26px; }
-#lista td { height: 150px; padding: 0 48px; vertical-align: middle; border-bottom: 1px solid #b9c0d0; }
-#lista td.pv { width: 230px; padding-right: 10px; }
-.pnimi { font-weight: bold; font-size: 26px; }
-.pnum { font-size: 19px; margin-top: 4px; color: #4a5470; }
-.ryhma { margin: 0 0 6px 0; line-height: 1.3; }
-.tyhja { color: #8a90a0; font-style: italic; }
-tr.nyt td { background: #ffe45c; }
-tr.nyt .pnum { color: #1f2a44; }
-tr.meni td { color: #8a90a0; }
-tr.meni .pnum { color: #9aa0b0; }
-#vika { padding: 14px 48px; font-size: 20px; color: #9b1c1c; }
-#alalaita { position: absolute; left: 48px; bottom: 12px; font-size: 15px; color: #6b7285; }
+<style type="text/css">
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background-color:#e7e0cf;
+    font-family:"Segoe UI", Arial, Helvetica, sans-serif; color:#1f3a2e; }
+  #stage { position:absolute; top:0; left:0; width:1345px; height:980px; background-color:#f7f3ea;
+    display:-webkit-box; display:-webkit-flex; display:flex;
+    -webkit-box-orient:vertical; -webkit-flex-direction:column; flex-direction:column; overflow:hidden; }
+  .head { -webkit-box-flex:0; -webkit-flex:0 0 auto; flex:0 0 auto; height:140px; padding:0 56px;
+    border-bottom:3px solid #1f3a2e; display:-webkit-box; display:-webkit-flex; display:flex;
+    -webkit-box-align:center; -webkit-align-items:center; align-items:center;
+    -webkit-box-pack:justify; -webkit-justify-content:space-between; justify-content:space-between; }
+  .head h1 { font-family:Georgia, "Times New Roman", serif; font-weight:bold; font-size:58px; margin:0; }
+  .head .sub { font-size:22px; color:#4d6157; margin-top:6px; }
+  .week { text-align:right; }
+  .week .wk { font-family:Georgia, "Times New Roman", serif; font-weight:bold; font-size:44px; line-height:1.1; }
+  .week .range { font-size:22px; color:#4d6157; margin-top:4px; }
+  #rows { -webkit-box-flex:1; -webkit-flex:1; flex:1; min-height:0; padding:22px 56px 8px;
+    display:-webkit-box; display:-webkit-flex; display:flex;
+    -webkit-box-orient:vertical; -webkit-flex-direction:column; flex-direction:column; }
+  .row { -webkit-box-flex:1; -webkit-flex:1 1 0px; flex:1 1 0px; min-height:0; margin-bottom:10px; overflow:hidden;
+    background-color:#fffdf7; border:1px solid #d9d2c1; border-left:10px solid #d9d2c1; border-radius:14px;
+    padding:0 34px 0 28px; display:-webkit-box; display:-webkit-flex; display:flex;
+    -webkit-box-align:center; -webkit-align-items:center; align-items:center; }
+  .row:last-child { margin-bottom:0; }
+  .day { width:250px; margin-right:34px; -webkit-box-flex:0; -webkit-flex:0 0 auto; flex:0 0 auto; }
+  .dname { font-family:Georgia, "Times New Roman", serif; font-weight:bold; font-size:40px; line-height:1.1; }
+  .ddate { font-size:22px; color:#4d6157; margin-top:4px; }
+  .pill { display:none; margin-top:8px; background-color:#d98e3d; color:#fff; font-size:15px; font-weight:bold;
+    letter-spacing:1px; padding:3px 12px; border-radius:999px; }
+  .food { -webkit-box-flex:1; -webkit-flex:1; flex:1; max-height:112px; overflow:hidden; padding-left:34px;
+    border-left:2px solid #e3dccb; line-height:1.22; }
+  .f1 { font-size:38px; } .f2 { font-size:32px; } .f3 { font-size:27px; } .f4 { font-size:23px; }
+  .food.none { color:#8a9a90; font-style:italic; }
+  .row.today { background-color:#1f3a2e; border-color:#1f3a2e; border-left-color:#d98e3d; color:#f7f3ea; }
+  .row.today .ddate { color:#cfe0d2; }
+  .row.today .food { border-left-color:#3d5a4b; }
+  .row.today .pill { display:inline-block; }
+  .row.past { background-color:#f2eee3; border-left-color:#e3dccb; color:#76887d; }
+  .row.past .ddate { color:#93a299; }
+  .foot { -webkit-box-flex:0; -webkit-flex:0 0 auto; flex:0 0 auto; height:42px; padding-top:6px; text-align:center;
+    font-size:17px; color:#4d6157; }
+  #err { color:#b3261e; font-weight:bold; }
 </style>
 </head>
 <body>
-<div id="ylä"><h1>Mankolan koulun ruokalista</h1><p id="viikko">&nbsp;</p></div>
-<table id="lista"><tbody id="rivit"></tbody></table>
-<div id="vika"></div>
-<div id="alalaita">Jyväskylän kaupunki, Kylän Kattaus (eRuokalista)</div>
-<script>
-var PAIVAT = ['Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai'];
-var haettu = false;
+<div id="stage">
+  <div class="head">
+    <div><h1>Ruokalista</h1><div class="sub">Mankolan koulu</div></div>
+    <div class="week"><div class="wk" id="wk">Viikko</div><div class="range" id="range">&nbsp;</div></div>
+  </div>
+  <div id="rows"></div>
+  <div class="foot"><span id="upd">Haetaan ruokalistaa...</span> &nbsp;·&nbsp; Muutokset ruokalistaan mahdollisia <span id="err"></span></div>
+</div>
 
-function pad(n) { return n < 10 ? '0' + n : '' + n; }
-function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-function pvm(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
-function el(tag, cls, text) {
-  var e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text !== undefined) e.appendChild(document.createTextNode(text));
-  return e;
+<script type="text/javascript">
+// >>> Vaihda tähän oma Workerisi osoite (http://, ei https) <<<
+var API_URL = "http://ruoka-proxy.OMATUNNUS.workers.dev";
+
+var NAMES = ["Maanantai","Tiistai","Keskiviikko","Torstai","Perjantai"];
+var NO_FOOD = "Ei ruokalistaa";
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function sizeClass(t){ var n=t.length; return n<=70?"f1":(n<=120?"f2":(n<=180?"f3":"f4")); }
+function two(n){ return n<10 ? "0"+n : ""+n; }
+
+function render(data){
+  var byIdx = {}, i, html = "", d;
+  for (i=0;i<data.days.length;i++){ byIdx[data.days[i].i] = data.days[i]; }
+  for (i=0;i<5;i++){
+    d = byIdx[i];
+    var food = d && d.food ? d.food : "";
+    html += '<div class="row" data-day="'+(i+1)+'"><div class="day"><div class="dname">'+NAMES[i]+'</div>'
+      + '<div class="ddate">'+(d ? esc(d.d) : "&nbsp;")+'</div><span class="pill">TÄNÄÄN</span></div>'
+      + (food ? '<div class="food '+sizeClass(food)+'">'+esc(food)+'</div>'
+              : '<div class="food f2 none">'+NO_FOOD+'</div>')
+      + '</div>';
+  }
+  document.getElementById("rows").innerHTML = html;
+  document.getElementById("wk").innerHTML = "Viikko " + data.week;
+  document.getElementById("range").innerHTML = esc(data.range);
+  var n = new Date();
+  document.getElementById("upd").innerHTML = "Päivitetty " + n.getDate()+"."+(n.getMonth()+1)+". klo "+two(n.getHours())+"."+two(n.getMinutes());
+  document.getElementById("err").innerHTML = "";
+  markToday();
 }
-function pyyda(url, ok, virhe) {
-  var x = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-  x.open('GET', url, true);
-  x.onreadystatechange = function () {
-    if (x.readyState !== 4) return;
-    if (x.status === 200 || (x.status === 0 && x.responseText)) {
-      var d;
-      try { d = JSON.parse(x.responseText); } catch (e) { virhe(); return; }
-      ok(d);
-    } else { virhe(); }
+
+function markToday(){
+  var wd = new Date().getDay();
+  var rows = document.getElementById("rows").getElementsByTagName("div");
+  var i, el, d, cls;
+  for (i=0;i<rows.length;i++){
+    el = rows[i]; d = el.getAttribute("data-day");
+    if (!d) { continue; }
+    d = parseInt(d,10); cls = "row";
+    if (wd>=1 && wd<=5){ if (d===wd) { cls += " today"; } else if (d<wd) { cls += " past"; } }
+    el.className = cls;
+  }
+}
+
+function load(){
+  var x = new XMLHttpRequest();
+  x.onreadystatechange = function(){
+    if (x.readyState !== 4) { return; }
+    var data = null;
+    try { data = JSON.parse(x.responseText); } catch(e) {}
+    if (x.status === 200 && data && data.days){ render(data); }
+    else {
+      document.getElementById("err").innerHTML = "· Yhteysvirhe (" + x.status + "), yritetään uudelleen";
+      setTimeout(load, 30000);
+    }
   };
+  x.open("GET", API_URL + (API_URL.indexOf("?")<0 ? "?" : "&") + "t=" + new Date().getTime(), true);
   x.send(null);
 }
-function ryhmittele(ruoat) {
-  var ryhmat = [], idx = {}, i, k;
-  for (i = 0; i < ruoat.length; i++) {
-    k = ruoat[i].ryhma || '';
-    if (!idx.hasOwnProperty(k)) { idx[k] = ryhmat.length; ryhmat.push({ nimi: k, lista: [] }); }
-    ryhmat[idx[k]].lista.push(ruoat[i].nimi);
-  }
-  return ryhmat;
-}
-function piirra(data) {
-  var rivit = document.getElementById('rivit'), tanaan = iso(new Date());
-  var ma = pvm(data.maanantai), pe = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + 4);
-  var haku = {}, i, j;
-  for (i = 0; i < data.paivat.length; i++) haku[data.paivat[i].pvm] = data.paivat[i].ruoat;
-  while (rivit.firstChild) rivit.removeChild(rivit.firstChild);
-  for (i = 0; i < 5; i++) {
-    var d = new Date(ma.getFullYear(), ma.getMonth(), ma.getDate() + i), k = iso(d);
-    var tr = el('tr', k === tanaan ? 'nyt' : (k < tanaan ? 'meni' : ''));
-    var a = el('td', 'pv'), b = el('td', 'ruoka');
-    a.appendChild(el('div', 'pnimi', PAIVAT[i]));
-    a.appendChild(el('div', 'pnum', d.getDate() + '.' + (d.getMonth() + 1) + '.' + (k === tanaan ? ' tänään' : '')));
-    var ryhmat = ryhmittele(haku[k] || []);
-    if (!ryhmat.length) b.appendChild(el('div', 'tyhja', 'Ei ruokalistaa'));
-    for (j = 0; j < ryhmat.length; j++) {
-      var p = el('p', 'ryhma');
-      if (ryhmat.length > 1 && ryhmat[j].nimi) p.appendChild(el('b', '', ryhmat[j].nimi + ': '));
-      p.appendChild(document.createTextNode(ryhmat[j].lista.join(', ')));
-      b.appendChild(p);
-    }
-    tr.appendChild(a); tr.appendChild(b); rivit.appendChild(tr);
-  }
-  document.getElementById('viikko').innerHTML = 'Viikko ' + data.viikko + ', ' + ma.getDate() + '.' + (ma.getMonth() + 1) +
-    '.\u2013' + pe.getDate() + '.' + (pe.getMonth() + 1) + '.';
-  document.getElementById('alalaita').innerHTML = 'Jyväskylän kaupunki, Kylän Kattaus (eRuokalista). Päivitetty ' + data.paivitetty;
-  document.getElementById('vika').innerHTML = '';
-  sovita();
-}
-function sovita() {
-  var t = document.getElementById('lista'), koko = 26;
-  t.style.fontSize = koko + 'px';
-  while (t.offsetHeight > 980 - 112 - 40 && koko > 14) { koko--; t.style.fontSize = koko + 'px'; }
-}
-function lataa() {
-  pyyda('menu.json?t=' + new Date().getTime(), function (d) { haettu = true; piirra(d); }, function () {
-    if (!haettu) document.getElementById('vika').innerHTML = 'Ruokalistaa ei saatu ladattua. Yritetään uudelleen.';
-    setTimeout(lataa, 60000);
-  });
-}
-lataa();
-setInterval(lataa, 15 * 60 * 1000);
+load();                       // haetaan joka kerta kun sivu avataan / ladataan uudelleen
+setInterval(markToday, 60000);
 </script>
 </body>
 </html>
